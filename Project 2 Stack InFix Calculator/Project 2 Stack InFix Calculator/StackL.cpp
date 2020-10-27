@@ -104,7 +104,6 @@ bool Stack<T> ::isEmpty()
 template <class T>
 T Stack<T>::peek() {
     if (top == NULL) {
-        cout << "ERROR";
         return -1;
     }
     return top->data;
@@ -127,8 +126,9 @@ void Stack<T> ::push(T item)
 template <class T>
 void Stack<T> ::pop()
 {
-    if (isEmpty())
-        cout << "STACK IS EMPTY";
+    if (isEmpty()) {
+        cout << "STACK IS EMPTY\n";
+    }
     else
     {
         node<T>* p;

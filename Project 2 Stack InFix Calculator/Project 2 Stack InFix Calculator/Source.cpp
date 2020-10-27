@@ -16,7 +16,7 @@ int processExpression(string);
 //void printInstructions();
 
 int main() {
-    cout << processExpression("200 * (-5)");
+    cout << processExpression("200 *(_(1)*_(_5))");
     return 0;
 }
 
@@ -32,7 +32,8 @@ bool isOperator(char c) {
         c == '/' ||
         c == '*' ||
         c == '(' ||
-        c == ')');
+        c == ')' ||
+        c == '_');
 }
 
 //Operate on the expression and return an integer
@@ -56,8 +57,9 @@ int precedenceOfOp(char op) {
     case '-': return 1;
     case '*':
     case '/': return 2;
+    case '_': return 3;
     case '(':
-    case ')': return 3;
+    case ')': return 4;
     default: return -1;
     }
 }
@@ -72,10 +74,19 @@ int processExpression(string exp) {
     while (position < exp.length()) {
         char cur = exp[position];
         if (isdigit(cur)) {
+            /*if (operators.peek() == '_') {
+                 value = -1*(value * 10) + static_cast<int>(cur - '0');
+                 operators.pop();
+             }*/
+             //else {
             value = (value * 10) + static_cast<int>(cur - '0');
+            //}
         }
         else if (isOperator(cur)) {
-            if (cur == '(') {
+            if (cur == '_') {
+                operators.push('_');
+            }
+            else if (cur == '(') {
                 operators.push(cur);
                 value = 0;
             }
@@ -90,21 +101,35 @@ int processExpression(string exp) {
                     cur = operators.peek();
                     operators.pop();
                     value = values.peek();
-                    values.pop();
-                    int prior = values.peek();
-                    values.pop();
-                    value = operate(prior, value, cur);
+                    if (cur == '_') {
+                        value *= -1;
+                        cur = operators.peek();
+                    }
+                    else {
+                        values.pop();
+                        int prior = values.peek();
+                        values.pop();
+                        value = operate(prior, value, cur);
+                    }
                 }
                 operators.pop();
                 values.pop();
-            }
-            else {
+            }else {
                 char priorOp = operators.peek();
-                if (precedenceOfOp(cur) > precedenceOfOp(priorOp)) {
+                /*if (cur == '_') {
+                    value = values.peek();
+                    values.pop();
+                    value *= -1;
+                    cur = operators.peek();
+                    operators.pop();
                     values.push(value);
-                    operators.push(cur);
                     value = 0;
-                }
+                }*/
+      /* else*/ if (precedenceOfOp(cur) > precedenceOfOp(priorOp)) {
+                        values.push(value);
+                        operators.push(cur);
+                        value = 0;
+                    }
                 else {
                     int prior = values.peek();
                     values.pop();
@@ -121,11 +146,24 @@ int processExpression(string exp) {
     }
 
     while (!operators.isEmpty()) {
-        int prior = values.peek();
-        values.pop();
-        char cur = operators.peek();
-        operators.pop();
-        value = operate(prior, value, cur);
+        //char cur = operators.peek();
+       /* if (cur == '_') {
+            value *= -1;
+            operators.pop();
+            values.push(value);
+            value = 0;
+        }*/
+      //  else {
+            int prior = values.peek();
+            values.pop();
+            char cur = operators.peek();
+            operators.pop();
+           while(cur == '_') {
+                prior *= -1;
+                cur = operators.peek();
+                operators.pop();
+            }
+            value = operate(prior, value, cur);
     }
     return value;
 }
